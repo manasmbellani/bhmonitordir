@@ -14,5 +14,5 @@ Run the script without any arguments to see the Usage info, including examples.
 
 To run via Docker, run the following command:
 ```
-docker run --rm -v /opt/dockershare:/opt/dockershare bhmonitordir:latest "/opt/dockershare/out-vulnreview-summary-*"
+docker run --rm -v /opt/dockershare:/opt/dockershare bhmonitordir:latest "/opt/dockershare/bhvulnreview/out-vulnreview-summary-*"
 ```
