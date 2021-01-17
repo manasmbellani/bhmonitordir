@@ -8,8 +8,9 @@ if [ $# -lt 1 ]; then
     echo "found or a file with content is added, script will show this content."
     echo 
     echo "Arguments:"
-    echo "file-pattern-to-monitor: File, or directory pattern e.g. '/tmp/test*' to monitor."
+    echo "file-pattern-to-monitor: File, or directory pattern(s) e.g. '/tmp/test*' to monitor."
     echo "    Ideally, the file pattern must contain '*' e.g. '/tmp/test*'"
+    echo "    Multiple file patterns can be separated by ','"
     echo "show_existing_content: Determine whether to show existing content in or not"
     echo "sleep_time: Time to sleep between checks" 
     echo 
@@ -25,19 +26,30 @@ if [ $# -lt 1 ]; then
     echo "    $0 /tmp/*"
     exit 1
 fi
-file_pattern=${1}
+file_patterns=${1}
 show_existing_content=${2:-"0"}
 sleep_time=${3:-"$SLEEP_TIME"}
+
+function read_file_patterns {
+    local file_patterns="$1"
+    prev_content=""
+    IFS=","
+    for file_pattern in $file_patterns; do
+        prev_content_single_pattern=$(find $file_pattern -type f -exec cat {} + 2>/dev/null)
+        prev_content=$(echo "$prev_content"; echo "$prev_content_single_pattern")
+    done
+    echo "$prev_content"
+}
 
 if [ "$show_existing_content" == "1" ]; then
     prev_content=""
 else
-    prev_content=$(find $file_pattern -type f -exec cat {} + 2>/dev/null)
+    prev_content=$(read_file_patterns "$file_patterns")
 fi
 sleep "$sleep_time"
 
 while [ 1 ]; do
-    new_content=$(find $file_pattern -type f -exec cat {} + 2>/dev/null)
+    new_content=$(read_file_patterns "$file_patterns")
     IFS=$'\n'
     for nl in $new_content; do
         does_str_already_exist=$(echo "$prev_content" | grep -Fx "$nl")
